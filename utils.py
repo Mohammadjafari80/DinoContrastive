@@ -267,7 +267,7 @@ class MultiCropWrapper(nn.Module):
         """
         if test:
            cls_embedding = self.backbone(x)
-           x = self.new_head.mlp(x)  # (n_samples, bottleneck_dim)
+           x = self.new_head.mlp(cls_embedding)  # (n_samples, bottleneck_dim)
            x = nn.functional.normalize(x, dim=-1, p=2)  # (n_samples, bottleneck_dim)
            return x
         else:
