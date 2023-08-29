@@ -28,6 +28,7 @@ def main():
     parser.add_argument("-t", "--tensorboard-dir", type=str, default="logs")
     parser.add_argument("--dino_model", type=str, default="dinov2_vitb14")
     parser.add_argument("--repo", type=str, default="facebookresearch/dinov2")
+    parser.add_argument("--path", type=str, default="~/data/")
     parser.add_argument("--clip-grad", type=float, default=2.0)
     parser.add_argument("--norm-last-layer", action="store_true")
     parser.add_argument("--batch-size-eval", type=int, default=64)
