@@ -61,7 +61,7 @@ def compute_knn(backbone, data_loader_train, data_loader_val, device):
     print("Testset feature extracting...")
     
     with torch.no_grad():
-        for index, (imgs, _) in enumerate(data_loader_val):
+        for index, (imgs, labels) in enumerate(data_loader_val):
             imgs = imgs.to(device)
             features = backbone(imgs, True)
             test_feature_space_pretrained.append(features[0].detach().cpu())
