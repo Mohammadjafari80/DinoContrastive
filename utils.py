@@ -77,6 +77,7 @@ class DataAugmentation:
                     scale=global_crops_scale,
                     interpolation=Image.BICUBIC,
                 ),
+                transforms.Lambda(lambda img: img.convert('RGB')),
                 flip_and_jitter,
                 RandomGaussianBlur(1.0),  # always apply
                 normalize,
@@ -90,6 +91,7 @@ class DataAugmentation:
                     scale=global_crops_scale,
                     interpolation=Image.BICUBIC,
                 ),
+                transforms.Lambda(lambda img: img.convert('RGB')),
                 flip_and_jitter,
                 RandomGaussianBlur(0.1),
                 transforms.RandomSolarize(170, p=0.2),
@@ -104,6 +106,7 @@ class DataAugmentation:
                     scale=local_crops_scale,
                     interpolation=Image.BICUBIC,
                 ),
+                transforms.Lambda(lambda img: img.convert('RGB')),
                 flip_and_jitter,
                 RandomGaussianBlur(0.5),
                 normalize,

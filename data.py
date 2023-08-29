@@ -7,21 +7,14 @@ from torchvision.datasets import VisionDataset
 from torchvision.datasets.folder import default_loader
 from torchvision.datasets.utils import download_file_from_google_drive
 from utils import DataAugmentation
+from PIL import Image
 
-transform_color = transforms.Compose(
+transform_plain = transforms.Compose(
     [
         transforms.Resize(224),
+        transforms.Lambda(lambda img: img.convert('RGB')),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-    ]
-)
-
-transform_gray = transforms.Compose(
-    [
-        transforms.Resize(224),
-        transforms.Grayscale(num_output_channels=3),
-        transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
     ]
 )
 
@@ -68,7 +61,7 @@ def get_test_dataset(dataset, normal_labels, path, backbone):
 
 
 def get_CIFAR10_train(normal_class_labels, path, backbone):
-    transform = transform_color
+    transform = transform_plain
 
     trainset = CIFAR10(root=path, train=True, download=True, transform=transform)
 
@@ -88,7 +81,7 @@ def get_CIFAR10_train(normal_class_labels, path, backbone):
 
 
 def get_CIFAR10_test(normal_class_labels, path, backbone):
-    transform = transform_color
+    transform = transform_plain
 
     testset = CIFAR10(root=path, train=False, download=True, transform=transform)
     test_mask = np.isin(testset.targets, normal_class_labels)
@@ -121,7 +114,7 @@ def sparse2coarse(targets):
 
 
 def get_CIFAR100_train(normal_class_labels, path, backbone):
-    transform = transform_color
+    transform = transform_plain
 
     trainset = CIFAR100(root=path, train=True, download=True, transform=transform)
     trainset.targets = sparse2coarse(trainset.targets)
@@ -145,7 +138,7 @@ def get_CIFAR100_train(normal_class_labels, path, backbone):
 
 
 def get_CIFAR100_test(normal_class_labels, path, backbone):
-    transform = transform_color
+    transform = transform_plain
 
     testset = CIFAR100(root=path, train=False, download=True, transform=transform)
     testset.targets = sparse2coarse(testset.targets)
@@ -160,7 +153,7 @@ def get_CIFAR100_test(normal_class_labels, path, backbone):
 
 
 def get_MNIST_train(normal_class_labels, path, backbone):
-    transform = transform_gray
+    transform = transform_plain
 
     trainset = MNIST(root=path, train=True, download=True, transform=transform)
 
@@ -182,7 +175,7 @@ def get_MNIST_train(normal_class_labels, path, backbone):
 
 
 def get_MNIST_test(normal_class_labels, path, backbone):
-    transform = transform_gray
+    transform = transform_plain
 
     testset = MNIST(root=path, train=False, download=True, transform=transform)
     test_mask = np.isin(testset.targets, normal_class_labels)
@@ -195,7 +188,7 @@ def get_MNIST_test(normal_class_labels, path, backbone):
 
 
 def get_FASHION_MNIST_train(normal_class_labels, path, backbone):
-    transform = transform_gray
+    transform = transform_plain
 
     trainset = FashionMNIST(root=path, train=True, download=True, transform=transform)
 
@@ -217,7 +210,7 @@ def get_FASHION_MNIST_train(normal_class_labels, path, backbone):
 
 
 def get_FASHION_MNIST_test(normal_class_labels, path, backbone):
-    transform = transform_gray 
+    transform = transform_plain 
 
     testset = FashionMNIST(root=path, train=False, download=True, transform=transform)
 
@@ -231,7 +224,7 @@ def get_FASHION_MNIST_test(normal_class_labels, path, backbone):
 
 
 def get_SVHN_train(normal_class_labels, path, backbone):
-    transform = transform_color
+    transform = transform_plain
 
     trainset = SVHN(root=path, split="train", download=True, transform=transform)
 
@@ -251,7 +244,7 @@ def get_SVHN_train(normal_class_labels, path, backbone):
 
 
 def get_SVHN_test(normal_class_labels, path, backbone):
-    transform = transform_color
+    transform = transform_plain
 
     testset = SVHN(root=path, split="test", download=True, transform=transform)
     test_mask = np.isin(testset.labels, normal_class_labels)
@@ -389,7 +382,7 @@ class MVTecDataset(torch.utils.data.Dataset):
 
 
 def get_MVTEC_train(normal_class_labels, path, backbone):
-    transform = transform_color
+    transform = transform_plain
 
     all_trainsets = []
     all_trainsets_moco = []
@@ -414,7 +407,7 @@ def get_MVTEC_train(normal_class_labels, path, backbone):
 
 
 def get_MVTEC_test(normal_class_labels, path, backbone):
-    transform = transform_color
+    transform = transform_plain
     all_testsets = []
 
     for normal_class_indx in list(set(normal_class_labels)):
@@ -589,7 +582,7 @@ class CUBAnomaly(Cub2011):
 
 
 def get_CUB_train(normal_class_labels, path, backbone):
-    transform = transform_color
+    transform = transform_plain
 
     trainset = CUBAnomaly(
         root=path,
@@ -612,7 +605,7 @@ def get_CUB_train(normal_class_labels, path, backbone):
 
 
 def get_CUB_test(normal_class_labels, path, backbone):
-    transform = transform_color
+    transform = transform_plain
 
     testset = CUBAnomaly(
         root=path,
