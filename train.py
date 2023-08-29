@@ -2,7 +2,7 @@ import argparse
 import json
 import pathlib
 import torch
-import tqdm
+from tqdm.notebook import tqdm
 from torch.utils.data import DataLoader, SubsetRandomSampler
 from torch.utils.tensorboard import SummaryWriter
 from evaluate import compute_knn
@@ -119,55 +119,98 @@ def main():
 
     # Training loop
     n_batches = len(dataset_train_aug) // args.batch_size
-    best_acc = 0
-    n_steps = 0
 
     for e in range(args.n_epochs):
-        for i, (images, _) in tqdm.tqdm(
-            enumerate(data_loader_train_aug), total=n_batches
-        ):
-            if n_steps % args.logging_freq == 0:
-                student.eval()
+        
+        if e % args.logging_freq == 0:
+            student.eval()
+
+            # KNN
+            current_auc = compute_knn(
+                student,
+                data_loader_train_plain,
+                data_loader_val_plain,
+                device
+            )
+            print(f"Epoch {e}, KNN AUROC: {current_auc}")
+
+            student.train()
+
+        # Initialize tqdm inline within the outer for loop, after the test section
+        with tqdm(
+            enumerate(data_loader_train_aug), 
+            total=n_batches, 
+            desc="Training",
+            dynamic_ncols=True
+        ) as pbar:
+
+            for i, (images, _) in pbar:
+                images = [img.to(device) for img in images]
+
+                teacher_output = teacher(images[:2])
+                student_output = student(images)
+
+                loss = loss_inst(student_output, teacher_output)
+
+                optimizer.zero_grad()
+                loss.backward()
+                clip_gradients(student, args.clip_grad)
+                optimizer.step()
+
+                with torch.no_grad():
+                    for student_ps, teacher_ps in zip(
+                        student.parameters(), teacher.parameters()
+                    ):
+                        teacher_ps.data.mul_(args.momentum_teacher)
+                        teacher_ps.data.add_(
+                            (1 - args.momentum_teacher) * student_ps.detach().data
+                        )
+
+                # Update tqdm description to show the current loss
+                pbar.set_description(f"Training (loss: {loss.item():.4f})")
+
+                n_steps += 1
+
+    # for e in range(args.n_epochs):
+    #     for i, (images, _) in tqdm.tqdm(
+    #         enumerate(data_loader_train_aug), total=n_batches
+    #     ):
+    #         if n_steps % args.logging_freq == 0:
+    #             student.eval()
                 
-                # KNN
-                current_acc = compute_knn(
-                    student,
-                    data_loader_train_plain,
-                    data_loader_val_plain,
-                    device
-                )
-                print("KNN AUROC: ", current_acc)
-                writer.add_scalar("knn-auroc", current_acc, n_steps)
-                if current_acc > best_acc:
-                    torch.save(student, logging_path / "best_model.pth")
-                    best_acc = current_acc
+    #             # KNN
+    #             current_auc = compute_knn(
+    #                 student,
+    #                 data_loader_train_plain,
+    #                 data_loader_val_plain,
+    #                 device
+    #             )
+    #             print("KNN AUROC: ", current_auc)
+                
+    #             student.train()
 
-                student.train()
+    #         images = [img.to(device) for img in images]
 
-            images = [img.to(device) for img in images]
+    #         teacher_output = teacher(images[:2])
+    #         student_output = student(images)
 
-            teacher_output = teacher(images[:2])
-            student_output = student(images)
+    #         loss = loss_inst(student_output, teacher_output)
 
-            loss = loss_inst(student_output, teacher_output)
+    #         optimizer.zero_grad()
+    #         loss.backward()
+    #         clip_gradients(student, args.clip_grad)
+    #         optimizer.step()
 
-            optimizer.zero_grad()
-            loss.backward()
-            clip_gradients(student, args.clip_grad)
-            optimizer.step()
+    #         with torch.no_grad():
+    #             for student_ps, teacher_ps in zip(
+    #                 student.parameters(), teacher.parameters()
+    #             ):
+    #                 teacher_ps.data.mul_(args.momentum_teacher)
+    #                 teacher_ps.data.add_(
+    #                     (1 - args.momentum_teacher) * student_ps.detach().data
+    #                 )
 
-            with torch.no_grad():
-                for student_ps, teacher_ps in zip(
-                    student.parameters(), teacher.parameters()
-                ):
-                    teacher_ps.data.mul_(args.momentum_teacher)
-                    teacher_ps.data.add_(
-                        (1 - args.momentum_teacher) * student_ps.detach().data
-                    )
-
-            writer.add_scalar("train_loss", loss, n_steps)
-
-            n_steps += 1
+    #         n_steps += 1
 
 
 if __name__ == "__main__":

@@ -37,8 +37,10 @@ def compute_knn(backbone, data_loader_train, data_loader_val, device):
     train_feature_space_pretrained = []
     train_feature_space_finetuned = []
     
+    print("Trainset feature extracting...")
+    
     with torch.no_grad():
-        for imgs, _ in tqdm(data_loader_train, desc="Train set feature extracting"):
+        for index, (imgs, _) in enumerate(data_loader_train):
             imgs = imgs.to(device)
             features = backbone(imgs, True)
             train_feature_space_pretrained.append(features[0].detach().cpu())
@@ -56,8 +58,10 @@ def compute_knn(backbone, data_loader_train, data_loader_val, device):
     test_feature_space_finetuned = []
     test_labels = []
     
+    print("Testset feature extracting...")
+    
     with torch.no_grad():
-        for imgs, labels in tqdm(data_loader_val, desc="Test set feature extracting"):
+        for index, (imgs, _) in enumerate(data_loader_val):
             imgs = imgs.to(device)
             features = backbone(imgs, True)
             test_feature_space_pretrained.append(features[0].detach().cpu())
