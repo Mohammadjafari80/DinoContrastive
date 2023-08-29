@@ -49,7 +49,7 @@ def main():
 
     n_workers = 2
 
-    dataset_train_aug, dataset_train_plain = get_train_dataset(args.dataset, args.label, args.path, 'backbone')
+    dataset_train_plain,  dataset_train_aug = get_train_dataset(args.dataset, args.label, args.path, 'backbone')
     dataset_val_plain = get_test_dataset(args.dataset, args.label, args.path, 'backbone')
 
 
