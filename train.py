@@ -169,8 +169,6 @@ def main():
                 # Update tqdm description to show the current loss
                 pbar.set_description(f"Training (loss: {loss.item():.4f})")
 
-                n_steps += 1
-
     # for e in range(args.n_epochs):
     #     for i, (images, _) in tqdm.tqdm(
     #         enumerate(data_loader_train_aug), total=n_batches
