@@ -2,7 +2,7 @@ import argparse
 import json
 import pathlib
 import torch
-from tqdm.notebook import tqdm
+from tqdm import tqdm
 from torch.utils.data import DataLoader, SubsetRandomSampler
 from torch.utils.tensorboard import SummaryWriter
 from evaluate import compute_knn
