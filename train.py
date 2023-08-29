@@ -36,7 +36,7 @@ def main():
     parser.add_argument("--student-temp", type=float, default=0.1)
     parser.add_argument("-w", "--weight-decay", type=float, default=0.4)
 
-    parser.add_argument("--feature-dim", type=int, default=768)
+    parser.add_argument("--feature-dim", type=int, default=384)
     
     args = parser.parse_args()
     print(vars(args))

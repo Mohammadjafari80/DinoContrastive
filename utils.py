@@ -244,7 +244,7 @@ class MultiCropWrapper(nn.Module):
         self.backbone = backbone
         self.new_head = new_head
 
-    def forward(self, x):
+    def forward(self, x, test=False):
         """Run the forward pass.
 
         The different crops are concatenated along the batch dimension
@@ -262,13 +262,16 @@ class MultiCropWrapper(nn.Module):
             Tuple of `torch.Tensor` each of shape `(n_samples, out_dim)` where
             `output_dim` is determined by `Head`.
         """
-        n_crops = len(x)
-        concatenated = torch.cat(x, dim=0)  # (n_samples * n_crops, 3, size, size)
-        cls_embedding = self.backbone(concatenated)  # (n_samples * n_crops, in_dim)
-        logits = self.new_head(cls_embedding)  # (n_samples * n_crops, out_dim)
-        chunks = logits.chunk(n_crops)  # n_crops * (n_samples, out_dim)
-
-        return chunks
+        if test:
+           cls_embedding = self.backbone(x)
+           return self.new_head(cls_embedding)
+        else:
+          n_crops = len(x)
+          concatenated = torch.cat(x, dim=0)  # (n_samples * n_crops, 3, size, size)
+          cls_embedding = self.backbone(concatenated)  # (n_samples * n_crops, in_dim)
+          logits = self.new_head(cls_embedding)  # (n_samples * n_crops, out_dim)
+          chunks = logits.chunk(n_crops)  # n_crops * (n_samples, out_dim)
+          return chunks
 
 
 class Loss(nn.Module):
