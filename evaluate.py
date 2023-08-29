@@ -34,33 +34,52 @@ def compute_knn(backbone, data_loader_train, data_loader_val, device):
     val_auroc : float
         Validation auroc.
     """
-    train_feature_space = []
+    train_feature_space_pretrained = []
+    train_feature_space_finetuned = []
     
     with torch.no_grad():
         for imgs, _ in tqdm(data_loader_train, desc="Train set feature extracting"):
             imgs = imgs.to(device)
             features = backbone(imgs, True)
-            train_feature_space.append(features.detach().cpu())
-        train_feature_space = (
-            torch.cat(train_feature_space, dim=0).contiguous().cpu().numpy()
+            train_feature_space_pretrained.append(features[0].detach().cpu())
+            train_feature_space_finetuned.append(features[1].detach().cpu())
+            
+        train_feature_space_pretrained = (
+            torch.cat(train_feature_space_pretrained, dim=0).contiguous().cpu().numpy()
         )
         
-    test_feature_space = []
+        train_feature_space_finetuned = (
+            torch.cat(train_feature_space_finetuned, dim=0).contiguous().cpu().numpy()
+        )
+        
+    test_feature_space_pretrained = []
+    test_feature_space_finetuned = []
     test_labels = []
     
     with torch.no_grad():
         for imgs, labels in tqdm(data_loader_val, desc="Test set feature extracting"):
             imgs = imgs.to(device)
             features = backbone(imgs, True)
-            test_feature_space.append(features.detach().cpu())
+            test_feature_space_pretrained.append(features[0].detach().cpu())
+            test_feature_space_finetuned.append(features[1].detach().cpu())
             test_labels.append(labels)
-        test_feature_space = (
-            torch.cat(test_feature_space, dim=0).contiguous().cpu().numpy()
+            
+        test_feature_space_pretrained = (
+            torch.cat(test_feature_space_pretrained, dim=0).contiguous().cpu().numpy()
         )
+        
+        test_feature_space_finetuned = (
+            torch.cat(test_feature_space_finetuned, dim=0).contiguous().cpu().numpy()
+        )
+        
         test_labels = torch.cat(test_labels, dim=0).cpu().numpy()
 
-    distances = knn_score(train_feature_space, test_feature_space)
+    distances_pretrained = knn_score(train_feature_space_pretrained, test_feature_space_pretrained)
+    distances_finetuned = knn_score(train_feature_space_finetuned, test_feature_space_finetuned)
+    distances_commbined = (distances_pretrained - np.min(distances_pretrained)) / (np.max(distances_pretrained) - np.min(distances_pretrained)) + (distances_finetuned - np.min(distances_finetuned)) / (np.max(distances_finetuned) - np.min(distances_finetuned))
+    
+    auc_pretrained = roc_auc_score(test_labels, distances_pretrained)
+    auc_finetuned = roc_auc_score(test_labels, distances_finetuned)
+    auc_combined = roc_auc_score(test_labels, distances_commbined)
 
-    auc = roc_auc_score(test_labels, distances)
-
-    return auc
+    return auc_pretrained, auc_finetuned, auc_combined
