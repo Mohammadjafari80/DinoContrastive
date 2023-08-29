@@ -267,7 +267,9 @@ class MultiCropWrapper(nn.Module):
         """
         if test:
            cls_embedding = self.backbone(x)
-           return self.new_head(cls_embedding)
+           x = self.new_head.mlp(x)  # (n_samples, bottleneck_dim)
+           x = nn.functional.normalize(x, dim=-1, p=2)  # (n_samples, bottleneck_dim)
+           return x
         else:
           n_crops = len(x)
           concatenated = torch.cat(x, dim=0)  # (n_samples * n_crops, 3, size, size)

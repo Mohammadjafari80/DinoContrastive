@@ -20,11 +20,11 @@ def main():
         "-d", "--device", type=str, choices=("cpu", "cuda"), default="cuda"
     )
     parser.add_argument("--label", type=int, help="The normal class", nargs="+")
-    parser.add_argument("-l", "--logging-freq", type=int, default=200)
+    parser.add_argument("-l", "--logging-freq", type=int, default=5)
     parser.add_argument("--momentum-teacher", type=float, default=0.9995)
     parser.add_argument("-c", "--n-crops", type=int, default=4)
     parser.add_argument("-e", "--n-epochs", type=int, default=100)
-    parser.add_argument("-o", "--out-dim", type=int, default=1024)
+    parser.add_argument("-o", "--out-dim", type=int, default=16)
     parser.add_argument("-t", "--tensorboard-dir", type=str, default="logs")
     parser.add_argument("--dino_model", type=str, default="dinov2_vits14")
     parser.add_argument("--repo", type=str, default="facebookresearch/dinov2")
