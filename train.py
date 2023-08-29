@@ -26,7 +26,7 @@ def main():
     parser.add_argument("-e", "--n-epochs", type=int, default=100)
     parser.add_argument("-o", "--out-dim", type=int, default=1024)
     parser.add_argument("-t", "--tensorboard-dir", type=str, default="logs")
-    parser.add_argument("--dino_model", type=str, default="dinov2_vitb14")
+    parser.add_argument("--dino_model", type=str, default="dinov2_vits14")
     parser.add_argument("--repo", type=str, default="facebookresearch/dinov2")
     parser.add_argument("--path", type=str, default="~/data/")
     parser.add_argument("--clip-grad", type=float, default=2.0)
@@ -131,11 +131,12 @@ def main():
                 
                 # KNN
                 current_acc = compute_knn(
-                    student.backbone,
+                    student,
                     data_loader_train_plain,
                     data_loader_val_plain,
                     device
                 )
+                print("KNN AUROC: ", current_acc)
                 writer.add_scalar("knn-auroc", current_acc, n_steps)
                 if current_acc > best_acc:
                     torch.save(student, logging_path / "best_model.pth")
